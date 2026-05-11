@@ -24,11 +24,39 @@ ROI_COORDS = [
     (65, 320, 15), (15, 320, 15)
 ]
 
-for folder in [SAVE_FOLDER, DEBUG_FOLDER, RESULTS_FOLDER]:
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+REFERENCE_DATA = {
+    "Urobilinogen": {"Normal/3.3": (240, 200, 185), "16": (235, 175, 160), "33 (+)": (218, 140, 130), "66 (++)": (200, 110, 105), "131 (+++)": (175, 75, 80)},
+    "Bilirubin": {"Neg": (232, 205, 185), "Small/17": (215, 175, 145), "Moderate/50": (195, 148, 115), "Large/100": (168, 115, 85)},
+    "Ketone": {"Neg": (230, 200, 195), "Trace/0.5": (215, 175, 178), "Small/1.5": (195, 148, 165), "Moderate/4.0": (168, 110, 148), "8.0": (148, 70, 120), "Large/16": (120, 40, 90)},
+    "Creatinine": {"0.9": (228, 218, 195), "4.4": (210, 200, 172), "8.8": (188, 178, 148), "17.7": (160, 150, 120), "26.5": (130, 120, 92)},
+    "Blood": {"Neg": (225, 185, 100), "Non-hemolyzed Trace/10": (195, 165, 110), "Hemolyzed Trace/10": (168, 148, 118), "Small/25": (140, 128, 120), "Moderate/80": (95, 110, 85), "Large/200": (55, 75, 50)},
+    "Protein": {"Neg": (235, 235, 175), "Trace (±)": (215, 225, 150), "0.3 (+)": (175, 205, 120), "1.0 (++)": (135, 185, 100), "3.0 (+++)": (100, 158, 80), ">20.0 (++++)": (65, 125, 55)},
+    "Micro Albumin": {"10": (195, 228, 225), "30": (165, 210, 210), "80": (130, 190, 195), "150": (95, 165, 175)},
+    "Nitrite": {"Neg": (238, 220, 215), "Positive (any uniform pink)": (225, 175, 185)},
+    "Leukocytes": {"Neg": (235, 220, 205), "Trace/15": (220, 200, 185), "Small/70": (198, 172, 168), "Moderate/125": (175, 140, 158), "Large/500": (148, 105, 140)},
+    "Glucose": {"Neg": (175, 210, 175), "Trace/5": (145, 195, 148), "15 (+)": (115, 175, 120), "30 (++)": (85, 150, 90), "60 (+++)": (165, 105, 45), "110 (++++)": (130, 65, 30)},
+    "Specific Gravity": {"1.000": (55, 138, 95), "1.005": (42, 115, 80), "1.010": (65, 128, 58), "1.015": (105, 140, 42), "1.020": (148, 152, 38), "1.025": (188, 158, 42), "1.030": (205, 148, 38)},
+    "pH": {"5.0": (215, 175, 68), "6.0": (195, 185, 68), "6.5": (172, 188, 65), "7.0": (148, 185, 62), "7.5": (115, 165, 62), "8.0": (85, 140, 65), "8.5": (55, 105, 110)},
+    "Ascorbate": {"0": (55, 105, 118), "0.6": (95, 155, 100), "1.4": (145, 185, 80), "2.8": (185, 205, 78), "5.0": (215, 218, 115)},
+    "Calcium": {"≤1.0": (235, 228, 205), "2.5": (218, 215, 190), "5.0": (200, 195, 185), "7.5": (185, 178, 195), "≥10": (168, 158, 205)}
+}
 
 # --- PROCESSING LOGIC ---
+def get_closest_match(r, g, b, parameter_name):
+    if parameter_name not in REFERENCE_DATA:
+        return "N/A"
+    
+    refs = REFERENCE_DATA[parameter_name]
+    min_dist = float('inf')
+    best_match = "Unknown"
+    
+    for label, ref_rgb in refs.items():
+        dist = np.sqrt((r - ref_rgb[0])**2 + (g - ref_rgb[1])**2 + (b - ref_rgb[2])**2)
+        if dist < min_dist:
+            min_dist = dist
+            best_match = label
+    return best_match
+
 def analyze_image(img_bgr):
     results = []
     debug_img = img_bgr.copy()
@@ -40,13 +68,16 @@ def analyze_image(img_bgr):
         if roi.size > 0:
             avg_color_bgr = cv2.mean(roi)[:3]
             r, g, b = int(avg_color_bgr[2]), int(avg_color_bgr[1]), int(avg_color_bgr[0])
-            results.append({"name": name, "r": r, "g": g, "b": b})
+            
+            # Match color
+            match = get_closest_match(r, g, b, name)
+            results.append({"name": name, "r": r, "g": g, "b": b, "match": match})
             
             # Draw for debug
             cv2.rectangle(debug_img, (x, y), (x+size, y+size), (0, 255, 0), 2)
-            cv2.putText(debug_img, str(i+1), (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
+            cv2.putText(debug_img, f"{i+1}:{match}", (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
         else:
-            results.append({"name": name, "r": None, "g": None, "b": None})
+            results.append({"name": name, "r": None, "g": None, "b": None, "match": "Error"})
             
     return results, debug_img
 
@@ -164,14 +195,15 @@ if st.session_state.last_capture:
         st.image(rgb_img, use_column_width=True, caption=f"Capture ID: {data['ts']}")
         
     with col2:
-        st.subheader("Pad Colors (RGB)")
+        st.subheader("Analysis Results")
         for res in data["results"]:
             with st.container():
                 c1, c2 = st.columns([3, 2])
                 c1.write(f"**{res['name']}**")
                 if res['r'] is not None:
                     color_hex = '#%02x%02x%02x' % (res['r'], res['g'], res['b'])
-                    c2.markdown(f'<div style="background-color:{color_hex}; width:20px; height:20px; display:inline-block; border:1px solid #000; margin-right:5px; vertical-align: middle;"></div> `{res["r"]},{res["g"]},{res["b"]}`', unsafe_allow_html=True)
+                    c2.markdown(f'<div style="background-color:{color_hex}; width:20px; height:20px; display:inline-block; border:1px solid #000; margin-right:5px; vertical-align: middle;"></div> **{res["match"]}**', unsafe_allow_html=True)
+                    c2.caption(f"RGB: {res['r']},{res['g']},{res['b']}")
                 else:
                     c2.write("Error")
                 st.divider()
