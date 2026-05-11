@@ -1,0 +1,6 @@
+requests==2.31.0
+pyserial==3.5
+opencv-python
+numpy
+streamlit
+pandas

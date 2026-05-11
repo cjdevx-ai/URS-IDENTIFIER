@@ -1,0 +1,15 @@
+bounding boxes constant values
+1. xpos = 15, ypos =320, size =15
+2. xpos = 65, ypos =320, size =15
+3. xpos = 125, ypos =320, size =15
+4. xpos = 195, ypos =320, size =15
+5. xpos = 275, ypos =320, size =15
+6. xpos = 365, ypos =320, size =15
+7. xpos = 475, ypos =320, size =15
+8. xpos = 590, ypos =320, size =15
+9. xpos = 715, ypos =320, size =15
+10. xpos = 835, ypos =320, size =15
+11. xpos = 945, ypos =320, size =15
+12. xpos = 1045, ypos =320, size =15
+13. xpos = 1130, ypos =320, size =15
+14. xpos = 1210, ypos =320, size =15

@@ -1,0 +1,28 @@
+# --- Python ---
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Arduino / ESP32 ---
+build/
+*.bin
+*.elf
+*.hex
+
+# --- Project Specific Data ---
+# Exclude folders where images are saved to keep repo small
+captured_images/
+captured_images_ap/
+processed_results/
+
+# --- IDEs and OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- Miscellaneous ---
+*.log
+.env
