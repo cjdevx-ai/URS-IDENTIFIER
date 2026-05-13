@@ -97,3 +97,15 @@
 [2026-05-13 23:51:12] NOTICE<"Results released successfully">
 [2026-05-13 23:51:12] NOTICE<"Cycle Complete. Waiting 0.5 minutes...">
 [2026-05-13 23:51:14] Pipeline stopped by user.
+[2026-05-14 01:58:35] NOTICE<"Starting new pipeline cycle">
+[2026-05-14 01:58:35] Attempting to connect to SSID: ESP32-Camera-Connect...
+[2026-05-14 01:58:35] Connection command sent for ESP32-Camera-Connect. Waiting...
+[2026-05-14 01:58:37] NOTICE<"Requesting capture from http://192.168.4.1/capture">
+[2026-05-14 01:58:38] NOTICE<"Image saved: captured_images_rpi\img_20260514-015837.jpg">
+[2026-05-14 01:58:39] Processing complete. Results saved to analysis_results_rpi\results_20260514-015837.csv
+[2026-05-14 01:58:39] Attempting to connect to SSID: ZTE_DEE446...
+[2026-05-14 01:58:39] Connection command sent for ZTE_DEE446. Waiting...
+[2026-05-14 01:58:41] NOTICE<"Final Results Release">
+[2026-05-14 01:58:41] NOTICE<"Results released successfully">
+[2026-05-14 01:58:41] NOTICE<"Cycle Complete. Waiting 0.5 minutes...">
+[2026-05-14 01:58:46] Pipeline stopped by user.

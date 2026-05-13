@@ -84,34 +84,36 @@ def is_connected_to(ssid):
             verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
             return f"SSID                   : {ssid}" in verify_result.stdout
         else:
-            # 1. Try iwgetid
+            # 1. Try iwgetid (most reliable for simple SSID check)
             try:
                 res = subprocess.run(["iwgetid", "-r"], capture_output=True, text=True)
                 if res.returncode == 0 and res.stdout.strip() == ssid:
                     return True
-            except:
+            except Exception:
                 pass
 
             # 2. Try nmcli
             try:
                 cmd = ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"]
                 result = subprocess.run(cmd, capture_output=True, text=True)
-                if f"yes:{ssid}" in result.stdout:
+                if result.returncode == 0 and f"yes:{ssid}" in result.stdout:
                     return True
-            except:
+            except Exception:
                 pass
             
             # 3. Try checking IP route (if connected to ESP32 AP)
             if ssid == ESP_SSID:
                 try:
-                    route_res = subprocess.run(["ip", "route"], capture_output=True, text=True)
-                    if f"default via {ESP_IP}" in route_res.stdout or f"{ESP_IP} dev wlan0" in route_res.stdout:
+                    route_res = subprocess.run(["ip", "addr", "show", "wlan0"], capture_output=True, text=True)
+                    # Check if we have an IP in the 192.168.4.x range
+                    if "192.168.4." in route_res.stdout:
                         return True
-                except:
+                except Exception:
                     pass
 
             return False
-    except:
+    except Exception as e:
+        log(f"Error in is_connected_to: {e}")
         return False
 
 def switch_wifi(ssid, password=None):
@@ -134,26 +136,76 @@ def switch_wifi(ssid, password=None):
                 for _ in range(15):
                     time.sleep(2)
                     if is_connected_to(ssid): return True
+                log(f"Timeout waiting for connection to {ssid}")
+                return False
+            else:
+                log(f"Netsh command failed: {result.stderr}")
                 return False
         else:
             # Linux: Try nmcli then wpa_cli
+            nmcli_available = False
             try:
-                if password:
-                    cmd = ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
+                # Check if nmcli exists
+                subprocess.run(["nmcli", "--version"], capture_output=True, check=True)
+                nmcli_available = True
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                pass
+
+            if nmcli_available:
+                try:
+                    if password:
+                        cmd = ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
+                    else:
+                        cmd = ["nmcli", "dev", "wifi", "connect", ssid]
+                    
+                    log(f"Running nmcli: {' '.join(cmd)}")
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+                    if result.returncode == 0:
+                        log(f"Successfully connected to {ssid} via nmcli")
+                        return True
+                    else:
+                        log(f"nmcli failed to connect: {result.stderr or result.stdout}")
+                        # Fall through to wpa_cli if nmcli fails
+                except Exception as e:
+                    log(f"nmcli error: {e}")
+
+            # Fallback to wpa_cli
+            log(f"Attempting wpa_cli fallback for {ssid}...")
+            try:
+                # Check if ssid is in wpa_cli list networks
+                list_res = subprocess.run(["wpa_cli", "list_networks"], capture_output=True, text=True)
+                net_id = None
+                for line in list_res.stdout.splitlines():
+                    if ssid in line:
+                        parts = line.split()
+                        if len(parts) > 1 and parts[1] == ssid:
+                            net_id = parts[0]
+                            break
+                
+                if net_id:
+                    log(f"Found {ssid} with network ID {net_id}. Selecting...")
+                    subprocess.run(["wpa_cli", "select_network", net_id], capture_output=True)
                 else:
-                    cmd = ["nmcli", "dev", "wifi", "connect", ssid]
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
-                if result.returncode == 0: return True
-            except FileNotFoundError:
-                log("nmcli not found, attempting wpa_cli switch...")
-                subprocess.run(["wpa_cli", "-i", "wlan0", "select_network", ssid], capture_output=True)
-                for _ in range(20):
+                    log(f"SSID {ssid} not found in wpa_supplicant configuration. Attempting direct select (may fail)...")
+                    subprocess.run(["wpa_cli", "select_network", ssid], capture_output=True)
+
+                for _ in range(15):
                     time.sleep(2)
-                    if is_connected_to(ssid): return True
+                    if is_connected_to(ssid): 
+                        log(f"Successfully connected to {ssid} via wpa_cli")
+                        return True
+                
+                log(f"wpa_cli fallback failed to connect to {ssid}. Tip: Ensure network is configured in /etc/wpa_supplicant/wpa_supplicant.conf")
                 return False
+            except Exception as e:
+                log(f"wpa_cli error: {e}")
+                return False
+
+
     except Exception as e:
         log(f"Error during WiFi switch: {e}")
         return False
+
 
 def get_closest_match(r, g, b, parameter_name):
     if parameter_name not in REFERENCE_DATA:
