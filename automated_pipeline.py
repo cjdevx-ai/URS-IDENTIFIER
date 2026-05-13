@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import sys
+import json
 from datetime import datetime
 
 # --- CONFIGURATION ---
@@ -14,10 +15,9 @@ ESP_SSID = "ESP32-Camera-Connect"
 ESP_PASSWORD = "password123"
 ESP_IP = "192.168.4.1"
 
-# Home/Data Network Settings (optional: for "releasing" results via internet)
-# We detected 'ZTE_DEE446' as your current network.
-HOME_SSID = "ESP32-Camera-Connect"  
-HOME_PASSWORD = "password123"
+# Home/Data Network Settings (optional)
+HOME_SSID = "ZTE_DEE446"  
+HOME_PASSWORD = "Your_Home_WiFi_Password"
 
 # File Paths
 SAVE_FOLDER = "captured_images_rpi"
@@ -28,6 +28,9 @@ LOG_FILE = "pipeline_log.txt"
 INTERVAL_MINUTES = 0.5  # How often to run the full cycle
 CAPTURE_TIMEOUT = 15  # Seconds to wait for image capture
 
+# Debugging
+DEBUG_SKIP_WIFI = False  # Set to True to skip WiFi checks and attempt capture directly
+
 # Urine Strip Parameters (aligned with app.py/bbx.txt)
 PARAMETERS = [
     "Urobilinogen", "Bilirubin", "Ketone", "Creatinine", "Blood", 
@@ -35,7 +38,6 @@ PARAMETERS = [
     "Specific Gravity", "pH", "Ascorbate", "Calcium"
 ]
 
-# ROI Coords: (x, y, size) - Using the order from bbx.txt
 ROI_COORDS = [
     (15, 320, 15), (65, 320, 15), (125, 320, 15), (195, 320, 15), 
     (275, 320, 15), (365, 320, 15), (475, 320, 15), (590, 320, 15), 
@@ -43,7 +45,6 @@ ROI_COORDS = [
     (1130, 320, 15), (1210, 320, 15)
 ]
 
-# Reference Data for Color Matching (from app.py)
 REFERENCE_DATA = {
     "Urobilinogen": {"Normal/3.3": (240, 200, 185), "16": (235, 175, 160), "33 (+)": (218, 140, 130), "66 (++)": (200, 110, 105), "131 (+++)": (175, 75, 80)},
     "Bilirubin": {"Neg": (232, 205, 185), "Small/17": (215, 175, 145), "Moderate/50": (195, 148, 115), "Large/100": (168, 115, 85)},
@@ -62,39 +63,11 @@ REFERENCE_DATA = {
 }
 
 # UART Settings (Future Trigger)
-UART_PORT = "COM3"  # Update this to your UART port (e.g., /dev/ttyS0 on Linux)
+UART_PORT = "COM3"  
 UART_BAUD = 115200
-USE_UART_TRIGGER = False # Set to True in the future to wait for UART
-
-# ... (rest of the config)
+USE_UART_TRIGGER = False 
 
 # --- HELPERS ---
-
-def wait_for_uart_trigger():
-    """
-    Placeholder for future UART trigger.
-    In the future, this will block until a specific byte or string is received.
-    """
-    if not USE_UART_TRIGGER:
-        return True # Skip trigger check
-
-    log(f"NOTICE<\"Waiting for UART trigger on {UART_PORT}...\">")
-    # Future implementation with pyserial:
-    # try:
-    #     import serial
-    #     with serial.Serial(UART_PORT, UART_BAUD, timeout=1) as ser:
-    #         while True:
-    #             if ser.in_waiting > 0:
-    #                 line = ser.readline().decode('utf-8').strip()
-    #                 if line == "TRIGGER": # Example trigger word
-    #                     log("NOTICE<\"UART Trigger received!\">")
-    #                     return True
-    #             time.sleep(0.1)
-    # except Exception as e:
-    #     log(f"NOTICE<\"UART Error: {e}\">")
-    #     return False
-    
-    return True # Placeholder return
 
 def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -111,9 +84,8 @@ def is_connected_to(ssid):
             verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
             return f"SSID                   : {ssid}" in verify_result.stdout
         else:
-            # 1. Try /proc/net/wireless fallback (most robust for RPi Lite)
+            # 1. Try iwgetid
             try:
-                # iwgetid is better if available, but let's try a direct approach
                 res = subprocess.run(["iwgetid", "-r"], capture_output=True, text=True)
                 if res.returncode == 0 and res.stdout.strip() == ssid:
                     return True
@@ -143,7 +115,11 @@ def is_connected_to(ssid):
         return False
 
 def switch_wifi(ssid, password=None):
-    """Switch Wi-Fi using nmcli, netsh, or wpa_cli (for RPi Lite)."""
+    """Switch Wi-Fi with aggressive logging for RPi debugging."""
+    if DEBUG_SKIP_WIFI:
+        log(f"DEBUG: Skipping WiFi switch to {ssid}")
+        return True
+
     if is_connected_to(ssid):
         log(f"Already connected to {ssid}")
         return True
@@ -160,9 +136,8 @@ def switch_wifi(ssid, password=None):
                     if is_connected_to(ssid): return True
                 return False
         else:
-            # Linux: Try nmcli (Desktop) then wpa_cli (Lite/RPi Zero)
+            # Linux: Try nmcli then wpa_cli
             try:
-                # Try NetworkManager
                 if password:
                     cmd = ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
                 else:
@@ -170,17 +145,12 @@ def switch_wifi(ssid, password=None):
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
                 if result.returncode == 0: return True
             except FileNotFoundError:
-                # Fallback to wpa_cli/wpa_supplicant (Common on RPi Lite)
                 log("nmcli not found, attempting wpa_cli switch...")
-                # Note: This assumes profiles are already in wpa_supplicant.conf
-                # To be fully 'ready', we'd use 'wpa_passphrase' to add them, 
-                # but usually users configure these via raspi-config.
                 subprocess.run(["wpa_cli", "-i", "wlan0", "select_network", ssid], capture_output=True)
                 for _ in range(20):
                     time.sleep(2)
                     if is_connected_to(ssid): return True
                 return False
-            
     except Exception as e:
         log(f"Error during WiFi switch: {e}")
         return False
@@ -216,13 +186,10 @@ def process_image(img_path, timestamp):
             r, g, b = int(avg_color_bgr[2]), int(avg_color_bgr[1]), int(avg_color_bgr[0])
             match = get_closest_match(r, g, b, name)
             results.append({"Parameter": name, "R": r, "G": g, "B": b, "Match": match})
-            
-            # Draw for debug (saved locally)
             cv2.rectangle(debug_img, (x, y), (x+size, y+size), (0, 255, 0), 2)
         else:
             results.append({"Parameter": name, "R": None, "G": None, "B": None, "Match": "ROI Error"})
 
-    # Save results
     df = pd.DataFrame(results)
     csv_filename = os.path.join(RESULTS_FOLDER, f"results_{timestamp}.csv")
     df.to_csv(csv_filename, index=False)
@@ -233,17 +200,16 @@ def process_image(img_path, timestamp):
     log(f"Processing complete. Results saved to {csv_filename}")
     return results
 
-import json
-
 def release_results(results):
-    """
-    Prints results in JSON format (excluding RGB values for brevity).
-    """
     log("NOTICE<\"Final Results Release\">")
-    # Filter out R, G, B values for the console output
     filtered = [{"Parameter": r["Parameter"], "Match": r["Match"]} for r in results]
     print(json.dumps(filtered, indent=4, ensure_ascii=False))
     log("NOTICE<\"Results released successfully\">")
+
+def wait_for_uart_trigger():
+    if not USE_UART_TRIGGER: return True
+    log(f"NOTICE<\"Waiting for UART trigger on {UART_PORT}...\">")
+    return True 
 
 # --- MAIN LOOP ---
 
@@ -252,19 +218,16 @@ def run_pipeline():
     if not os.path.exists(RESULTS_FOLDER): os.makedirs(RESULTS_FOLDER)
 
     while True:
-        # Wait for UART Trigger (Future Implementation)
         if not wait_for_uart_trigger():
             time.sleep(10)
             continue
 
         log("NOTICE<\"Starting new pipeline cycle\">")
         
-        # 1. Connect to ESP32
         if switch_wifi(ESP_SSID, ESP_PASSWORD):
             timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
             filename = os.path.join(SAVE_FOLDER, f"img_{timestamp}.jpg")
             
-            # 2. Capture Image
             try:
                 log(f"NOTICE<\"Requesting capture from http://{ESP_IP}/capture\">")
                 response = requests.get(f"http://{ESP_IP}/capture", timeout=CAPTURE_TIMEOUT)
@@ -273,17 +236,13 @@ def run_pipeline():
                         f.write(response.content)
                     log(f"NOTICE<\"Image saved: {filename}\">")
                     
-                    # 3. Process Locally
                     results = process_image(filename, timestamp)
                     
-                    # 4. Reconnect to Home Network (to upload/release)
                     if HOME_SSID not in ["Your_Home_WiFi_SSID", ""]:
                         if switch_wifi(HOME_SSID, HOME_PASSWORD):
-                            if results:
-                                release_results(results)
+                            if results: release_results(results)
                     else:
-                        if results:
-                            release_results(results)
+                        if results: release_results(results)
                 else:
                     log(f"NOTICE<\"Capture failed. HTTP Status: {response.status_code}\">")
             except Exception as e:
