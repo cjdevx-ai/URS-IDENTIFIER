@@ -102,3 +102,68 @@ network={
     id_str="esp32"
 }
 ```
+
+### 6. Automated Pipeline (Auto-start on Boot)
+To ensure the pipeline starts immediately when the Raspberry Pi boots up, set it up as a systemd service.
+
+#### 1. Create the Service File
+Run this command to create the service file:
+```bash
+sudo nano /etc/systemd/system/camera_pipeline.service
+```
+
+#### 2. Paste the Configuration
+Paste the following into the editor (ensure `WorkingDirectory` and `ExecStart` match your project path):
+```ini
+[Unit]
+Description=Camera Automated Pipeline
+After=network.target
+
+[Service]
+# Change these paths to the actual location on your RPi
+WorkingDirectory=/home/pizero2/URS-IDENTIFIER
+ExecStart=/usr/bin/python3 /home/pizero2/URS-IDENTIFIER/automated_pipeline.py
+Restart=always
+RestartSec=10
+User=pizero2
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
+```
+*Press `Ctrl+O`, `Enter`, then `Ctrl+X` to save and exit.*
+
+#### 3. Enable and Start the Service
+```bash
+# Reload systemd to recognize the new file
+sudo systemctl daemon-reload
+
+# Enable it to start on boot
+sudo systemctl enable camera_pipeline.service
+
+# Start it now
+sudo systemctl start camera_pipeline.service
+```
+
+### 7. Important RPi Commands
+These commands are essential for managing the project on the Raspberry Pi.
+
+#### Service Management
+- **Check status:** `sudo systemctl status camera_pipeline.service`
+- **View live logs:** `sudo journalctl -u camera_pipeline.service -f`
+- **Stop service:** `sudo systemctl stop camera_pipeline.service`
+- **Restart service:** `sudo systemctl restart camera_pipeline.service`
+
+#### WiFi Management (nmcli)
+Since the Pi will switch to the ESP32 network, use these to manage connections:
+- **Scan networks:** `nmcli dev wifi list`
+- **Manually connect to ESP32:** `sudo nmcli dev wifi connect ESP32-Camera-Connect password password123`
+- **Check current connection:** `nmcli connection show --active`
+
+#### Troubleshooting
+- **Check IP Address:** `hostname -I`
+- **Test ESP32 Connection:** `ping 192.168.4.1`
+- **View system logs:** `sudo dmesg | tail -n 20`
+
