@@ -1,0 +1,99 @@
+[2026-05-13 23:31:14] Starting new pipeline cycle...
+[2026-05-13 23:31:14] Attempting to connect to SSID: ESP32-Camera-Connect...
+[2026-05-13 23:31:14] Error during WiFi switch: [WinError 2] The system cannot find the file specified
+[2026-05-13 23:31:14] Cycle complete. Waiting 5 minutes...
+[2026-05-13 23:31:29] Pipeline stopped by user.
+[2026-05-13 23:31:34] Starting new pipeline cycle...
+[2026-05-13 23:31:34] Attempting to connect to SSID: ESP32-Camera-Connect...
+[2026-05-13 23:31:34] Error during WiFi switch: [WinError 2] The system cannot find the file specified
+[2026-05-13 23:31:34] Cycle complete. Waiting 5 minutes...
+[2026-05-13 23:31:45] Pipeline stopped by user.
+[2026-05-13 23:43:13] Starting new pipeline cycle...
+[2026-05-13 23:43:13] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:43:13] Requesting capture from http://192.168.4.1/capture...
+[2026-05-13 23:43:14] Image saved: captured_images_rpi\img_20260513-234313.jpg
+[2026-05-13 23:43:15] Processing complete. Results saved to analysis_results_rpi\results_20260513-234313.csv
+[2026-05-13 23:43:15] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:43:15] --- FINAL RESULTS ---
+[2026-05-13 23:43:15] Results released successfully.
+[2026-05-13 23:43:15] Cycle complete. Waiting 5 minutes...
+[2026-05-13 23:43:28] Pipeline stopped by user.
+[2026-05-13 23:43:47] Starting new pipeline cycle...
+[2026-05-13 23:43:47] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:43:47] Requesting capture from http://192.168.4.1/capture...
+[2026-05-13 23:43:47] Image saved: captured_images_rpi\img_20260513-234347.jpg
+[2026-05-13 23:43:47] Processing complete. Results saved to analysis_results_rpi\results_20260513-234347.csv
+[2026-05-13 23:43:47] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:43:47] --- FINAL RESULTS ---
+[2026-05-13 23:43:47] Results released successfully.
+[2026-05-13 23:43:47] Cycle complete. Waiting 0.5 minutes...
+[2026-05-13 23:44:17] Starting new pipeline cycle...
+[2026-05-13 23:44:17] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:44:17] Requesting capture from http://192.168.4.1/capture...
+[2026-05-13 23:44:17] Image saved: captured_images_rpi\img_20260513-234417.jpg
+[2026-05-13 23:44:18] Processing complete. Results saved to analysis_results_rpi\results_20260513-234417.csv
+[2026-05-13 23:44:18] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:44:18] --- FINAL RESULTS ---
+[2026-05-13 23:44:18] Results released successfully.
+[2026-05-13 23:44:18] Cycle complete. Waiting 0.5 minutes...
+[2026-05-13 23:44:48] Starting new pipeline cycle...
+[2026-05-13 23:44:48] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:44:48] Requesting capture from http://192.168.4.1/capture...
+[2026-05-13 23:44:48] Image saved: captured_images_rpi\img_20260513-234448.jpg
+[2026-05-13 23:44:48] Processing complete. Results saved to analysis_results_rpi\results_20260513-234448.csv
+[2026-05-13 23:44:48] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:44:48] --- FINAL RESULTS ---
+[2026-05-13 23:44:48] Results released successfully.
+[2026-05-13 23:44:48] Cycle complete. Waiting 0.5 minutes...
+[2026-05-13 23:45:18] Starting new pipeline cycle...
+[2026-05-13 23:45:18] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:45:18] Requesting capture from http://192.168.4.1/capture...
+[2026-05-13 23:45:18] Image saved: captured_images_rpi\img_20260513-234518.jpg
+[2026-05-13 23:45:19] Processing complete. Results saved to analysis_results_rpi\results_20260513-234518.csv
+[2026-05-13 23:45:19] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:45:19] --- FINAL RESULTS ---
+[2026-05-13 23:45:19] Results released successfully.
+[2026-05-13 23:45:19] Cycle complete. Waiting 0.5 minutes...
+[2026-05-13 23:45:49] Starting new pipeline cycle...
+[2026-05-13 23:45:49] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:45:49] Requesting capture from http://192.168.4.1/capture...
+[2026-05-13 23:45:49] Image saved: captured_images_rpi\img_20260513-234549.jpg
+[2026-05-13 23:45:49] Processing complete. Results saved to analysis_results_rpi\results_20260513-234549.csv
+[2026-05-13 23:45:49] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:45:49] --- FINAL RESULTS ---
+[2026-05-13 23:45:49] Results released successfully.
+[2026-05-13 23:45:49] Cycle complete. Waiting 0.5 minutes...
+[2026-05-13 23:46:16] Pipeline stopped by user.
+[2026-05-13 23:48:32] NOTICE<"Starting new pipeline cycle">
+[2026-05-13 23:48:32] Attempting to connect to SSID: ESP32-Camera-Connect...
+[2026-05-13 23:48:32] Connection command sent for ESP32-Camera-Connect. Waiting for connection...
+[2026-05-13 23:48:35] Successfully connected to ESP32-Camera-Connect
+[2026-05-13 23:48:35] NOTICE<"Requesting capture from http://192.168.4.1/capture">
+[2026-05-13 23:48:35] NOTICE<"Image saved: captured_images_rpi\img_20260513-234835.jpg">
+[2026-05-13 23:48:35] Processing complete. Results saved to analysis_results_rpi\results_20260513-234835.csv
+[2026-05-13 23:48:35] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:48:35] NOTICE<"Final Results Release">
+[2026-05-13 23:48:35] NOTICE<"Results released successfully">
+[2026-05-13 23:48:35] NOTICE<"Cycle Complete. Waiting 0.5 minutes...">
+[2026-05-13 23:48:56] Pipeline stopped by user.
+[2026-05-13 23:50:39] NOTICE<"Starting new pipeline cycle">
+[2026-05-13 23:50:39] Attempting to connect to SSID: ESP32-Camera-Connect...
+[2026-05-13 23:50:39] Connection command sent for ESP32-Camera-Connect. Waiting for connection...
+[2026-05-13 23:50:41] Successfully connected to ESP32-Camera-Connect
+[2026-05-13 23:50:41] NOTICE<"Requesting capture from http://192.168.4.1/capture">
+[2026-05-13 23:50:41] NOTICE<"Image saved: captured_images_rpi\img_20260513-235041.jpg">
+[2026-05-13 23:50:41] Processing complete. Results saved to analysis_results_rpi\results_20260513-235041.csv
+[2026-05-13 23:50:41] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:50:41] NOTICE<"Final Results Release">
+[2026-05-13 23:50:41] NOTICE<"Results released successfully">
+[2026-05-13 23:50:41] NOTICE<"Cycle Complete. Waiting 0.5 minutes...">
+[2026-05-13 23:51:11] NOTICE<"Starting new pipeline cycle">
+[2026-05-13 23:51:11] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:51:11] NOTICE<"Requesting capture from http://192.168.4.1/capture">
+[2026-05-13 23:51:11] NOTICE<"Image saved: captured_images_rpi\img_20260513-235111.jpg">
+[2026-05-13 23:51:12] Processing complete. Results saved to analysis_results_rpi\results_20260513-235111.csv
+[2026-05-13 23:51:12] Already connected to ESP32-Camera-Connect
+[2026-05-13 23:51:12] NOTICE<"Final Results Release">
+[2026-05-13 23:51:12] NOTICE<"Results released successfully">
+[2026-05-13 23:51:12] NOTICE<"Cycle Complete. Waiting 0.5 minutes...">
+[2026-05-13 23:51:14] Pipeline stopped by user.

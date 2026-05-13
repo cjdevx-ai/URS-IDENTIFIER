@@ -1,0 +1,15 @@
+Parameter,R,G,B,Match
+Urobilinogen,208,219,215,Normal/3.3
+Bilirubin,81,146,216,Moderate/50
+Ketone,231,222,147,Neg
+Creatinine,214,209,109,8.8
+Blood,145,212,202,Hemolyzed Trace/10
+Protein,205,205,205,Neg
+Micro Albumin,193,194,193,30
+Nitrite,181,184,167,Positive (any uniform pink)
+Leukocytes,176,166,81,Moderate/125
+Glucose,202,169,62,60 (+++)
+Specific Gravity,206,204,158,1.025
+pH,210,201,192,6.0
+Ascorbate,225,230,227,5.0
+Calcium,220,232,252,≤1.0
