@@ -58,3 +58,47 @@ streamlit run app.py
 - **Real-time Analysis:** Click "Capture & Analyze" to take a photo.
 - **ROI Visualization:** The captured image will show green bounding boxes around the 14 test pads.
 - **Detailed Results:** A side panel displays each parameter with its average RGB values and a visual color swatch.
+
+## Raspberry Pi Zero W Setup Guide
+Since the RPi Zero W uses an ARMv6 architecture and has limited RAM (512MB), follow this guide for a stable setup.
+
+### 1. Expand Filesystem
+Ensure your SD card's full capacity is available:
+1. Run `sudo raspi-config`.
+2. Go to **6 Advanced Options** > **A1 Expand Filesystem**.
+3. Finish and **Reboot**.
+
+### 2. Install System Dependencies
+Install pre-compiled libraries to avoid long compilation times:
+```bash
+sudo apt update
+sudo apt install -y python3-opencv python3-numpy python3-pandas python3-requests python3-pil libopenblas-dev
+```
+
+### 3. Virtual Environment Setup
+Create a virtual environment that uses the system-installed packages:
+```bash
+python3 -m venv --system-site-packages .venv
+source .venv/bin/activate
+```
+
+### 4. Project Installation
+Install the remaining requirements using the `--no-cache-dir` flag to save memory:
+```bash
+pip install -r requirements.txt --no-cache-dir
+```
+
+### 5. WiFi Configuration (Automatic Switching)
+For the `automated_pipeline.py` to switch between ESP32 and Home WiFi on RPi OS Lite, add your networks to `/etc/wpa_supplicant/wpa_supplicant.conf`:
+```bash
+network={
+    ssid="Your_Home_SSID"
+    psk="your_password"
+    id_str="home"
+}
+network={
+    ssid="ESP32-Camera-Connect"
+    psk="password123"
+    id_str="esp32"
+}
+```

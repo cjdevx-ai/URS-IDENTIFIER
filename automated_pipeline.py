@@ -111,16 +111,33 @@ def is_connected_to(ssid):
             verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
             return f"SSID                   : {ssid}" in verify_result.stdout
         else:
-            # RPi Zero W check: try nmcli first, fallback to iwgetid
+            # 1. Try /proc/net/wireless fallback (most robust for RPi Lite)
+            try:
+                # iwgetid is better if available, but let's try a direct approach
+                res = subprocess.run(["iwgetid", "-r"], capture_output=True, text=True)
+                if res.returncode == 0 and res.stdout.strip() == ssid:
+                    return True
+            except:
+                pass
+
+            # 2. Try nmcli
             try:
                 cmd = ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"]
                 result = subprocess.run(cmd, capture_output=True, text=True)
-                if "yes" in result.stdout:
-                    return f"yes:{ssid}" in result.stdout
-            except FileNotFoundError:
-                # Fallback for systems without NetworkManager (like RPi OS Lite)
-                result = subprocess.run(["iwgetid", "-r"], capture_output=True, text=True)
-                return result.stdout.strip() == ssid
+                if f"yes:{ssid}" in result.stdout:
+                    return True
+            except:
+                pass
+            
+            # 3. Try checking IP route (if connected to ESP32 AP)
+            if ssid == ESP_SSID:
+                try:
+                    route_res = subprocess.run(["ip", "route"], capture_output=True, text=True)
+                    if f"default via {ESP_IP}" in route_res.stdout or f"{ESP_IP} dev wlan0" in route_res.stdout:
+                        return True
+                except:
+                    pass
+
             return False
     except:
         return False
