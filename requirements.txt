@@ -2,6 +2,5 @@ requests==2.31.0
 pyserial==3.5
 opencv-python-headless
 numpy
-streamlit
 pandas
 Pillow
